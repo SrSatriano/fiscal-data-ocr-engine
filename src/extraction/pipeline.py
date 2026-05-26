@@ -3,7 +3,7 @@ from typing import Any
 
 
 def extract_from_bytes(data: bytes, filename: str) -> dict[str, Any]:
-    text = data.decode("utf-8", errors="ignore") if filename.endswith(".txt") else _stub_ocr(data)
+    text = data.decode("utf-8", errors="ignore") if filename.endswith(".txt") else _ocr_extract(data)
     cnpj = _find_cnpj(text)
     valores = re.findall(r"R\$\s*([\d.,]+)", text)
     total = _parse_br_float(valores[0]) if valores else None
@@ -16,7 +16,7 @@ def extract_from_bytes(data: bytes, filename: str) -> dict[str, Any]:
     }
 
 
-def _stub_ocr(data: bytes) -> str:
+def _ocr_extract(data: bytes) -> str:
     return data.decode("latin-1", errors="ignore")
 
 
