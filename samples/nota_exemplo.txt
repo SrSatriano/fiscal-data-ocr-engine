@@ -1,0 +1,6 @@
+NOTA FISCAL DE SERVICO
+CNPJ: 12.345.678/0001-90
+Razao Social: Empresa Exemplo LTDA
+Valor Total: R$ 2.450,00
+ICMS: R$ 245,00
+Descricao: Licenca de software cloud
