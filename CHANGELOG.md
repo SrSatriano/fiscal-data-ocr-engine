@@ -4,6 +4,20 @@ Todas as mudanças notáveis deste projeto são documentadas neste arquivo.
 
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/).
 
+## [1.1.0] — 2026-11-17
+
+### Adicionado
+
+- Leitura estruturada do XML da NF-e/NFC-e 4.00, com itens e totais.
+- Validação de DV de CNPJ, CPF e chave de acesso, e conferência da soma dos itens.
+- Extração de PDF (pypdf) e OCR opcional de imagem (Tesseract).
+- Categorização por NCM, CFOP e palavras-chave.
+- Processamento em lote com CSV e resumo; CLI `fiscalocr`; 11 testes; CI em Linux e Windows.
+
+### Removido
+
+- O "OCR" anterior, que só decodificava bytes como latin-1, e a documentação de deploy que não correspondia ao código.
+
 ## [1.0.0] — 2026-03-26
 
 ### Adicionado

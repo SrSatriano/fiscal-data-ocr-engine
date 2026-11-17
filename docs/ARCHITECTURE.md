@@ -1,83 +1,31 @@
-# Arquitetura — Motor de OCR e categorização fiscal
+# Arquitetura
 
-> Versão do documento: **1.0.0** · Última revisão: **2026-03-26**
-
-## 1. Visão geral
-
-Upload de PDF/imagem, parsing de CNPJ e valores, categorização por regras.
-
-Este documento descreve como os componentes se relacionam, onde há estado, e como escalar ou observar o sistema em produção.
-
-## 2. Diagrama de contexto
-
-```mermaid
-flowchart LR
-  UP[Upload NF] --> OCR[OCR / parsing]
-  OCR --> VAL[Validação CNPJ]
-  VAL --> CAT[Categorização fiscal]
-  CAT --> ERP[Export CSV / webhook]
+```
+src/fiscalocr/
+  validators.py    DV de CNPJ, CPF e chave de acesso (módulo 11); decomposição da chave
+  nfe_xml.py       XML da NF-e/NFC-e 4.00: ide, emit, dest, det/prod, ICMSTot
+  text_extract.py  texto de .txt, PDF (pypdf) ou imagem (Tesseract) → campos por padrão
+  categorize.py    categoria por prefixo de NCM, CFOP de serviço e palavras-chave
+  engine.py        roteamento por tipo, lote de pasta, CSV e resumo por categoria
+  api.py / cli.py  FastAPI e linha de comando
 ```
 
-## 3. Componentes principais
+## Duas rotas de extração
 
-| Componente | Responsabilidade |
-|------------|------------------|
-| Pipeline | Pipeline OCR multi-engine |
-| Validação | Validação de CNPJ e totais |
-| Categorização | Categorização por regras (combustível, software, etc.) |
-| Export | Export CSV e webhook |
-| Testes | Testes pytest |
-| Observabilidade | Métricas, logs estruturados e health checks |
-| Persistência | Estado durável e idempotência onde aplicável |
+1. **XML (precisão total).** Leitura estruturada do layout oficial. Mesmo assim, a chave e os documentos passam pela validação de DV, e a soma dos itens é conferida contra `vProd`. Divergências viram `alertas`, nunca são escondidas.
+2. **Texto, PDF ou imagem (heurística).** Cada campo é achado por padrão:
+   - **chave:** 44 dígitos, mesmo separados por espaço;
+   - **CNPJ:** com ou sem pontuação;
+   - **datas:** no formato brasileiro;
+   - **valores:** procurados perto de rótulos como "valor total da nota", "valor do ICMS".
 
-## 4. Fluxos críticos
+   Só é aceito o que passa na validação. Um CNPJ que o OCR leu errado tem o DV quebrado, é descartado e vira alerta. A `confianca` soma pesos dos campos achados: chave 0,4, CNPJ 0,2, data 0,1 e total rotulado 0,3.
 
-### 4.1 Caminho feliz
+## Categorias
 
-1. Cliente ou operador envia requisição/evento.
-2. Camada de serviço valida entrada e autentica quando necessário.
-3. Núcleo de domínio executa regra de negócio.
-4. Resultado é persistido e/ou publicado para assinantes.
-5. Métricas e logs registram latência e resultado.
+A categoria de cada item vem do NCM (o prefixo mais longo vence). Sem NCM, vem das palavras-chave da descrição. A categoria do documento é a que concentra mais **valor** entre os itens; em texto livre, são as palavras-chave do documento inteiro.
 
-### 4.2 Falhas e degradação
+## Segurança
 
-- Timeouts configuráveis em integrações externas.
-- Retry com backoff apenas onde a operação é idempotente.
-- Modo degradado documentado no README (ex.: sem LLM, sem GPU).
-
-## 5. Decisões de design
-
-| Decisão | Motivação |
-|---------|-----------|
-| **Baixa latência** | Hot path sem alocações desnecessárias no núcleo |
-| **Fail-safe** | Falha parcial não corrompe estado; reconciliação quando possível |
-| **Auditabilidade** | Logs estruturados com identificador de correlação |
-| **Testabilidade** | Contratos estáveis e testes automatizados na CI |
-
-## 6. Escalabilidade
-
-- Escale horizontalmente camadas **stateless** (API, workers).
-- Particione estado por chave de negócio (símbolo, tenant, shard).
-- Use filas para picos assimétricos entre produtor e consumidor.
-
-## 7. Observabilidade
-
-| Sinal | Uso |
-|-------|-----|
-| Latência p50/p99 | SLO de experiência |
-| Taxa de erro | Alertas de regressão |
-| Utilização CPU/GPU | Capacity planning |
-| Lag de fila | Autoscaling |
-
-## 8. Segurança na arquitetura
-
-- Segredos apenas em variáveis de ambiente ou secret manager.
-- Princípio do menor privilégio em tokens de API e RBAC.
-- Dados sensíveis: minimize retenção e documente bases legais (LGPD quando aplicável).
-
-## 9. Referências
-
-- [README](../README.md) — visão do produto
-- [DEPLOYMENT.md](DEPLOYMENT.md) — ambientes
-- [OPERATIONS.md](OPERATIONS.md) — runbook
+- XML com DTD/ENTITY é recusado (proteção contra XXE e "billion laughs").
+- A API limita uploads a 10 MB e só escuta em 127.0.0.1 quando iniciada pela CLI.

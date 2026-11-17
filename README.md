@@ -1,191 +1,55 @@
-<div align="center">
+# Fiscal Data OCR Engine
 
-# Motor de OCR e categorização fiscal
+[![CI](https://github.com/SrSatriano/fiscal-data-ocr-engine/actions/workflows/ci.yml/badge.svg)](https://github.com/SrSatriano/fiscal-data-ocr-engine/actions/workflows/ci.yml)
+![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)
+![licença](https://img.shields.io/badge/licen%C3%A7a-MIT-22c55e)
 
-<p>
-  <a href="https://github.com/SrSatriano/fiscal-data-ocr-engine"><img src="https://img.shields.io/badge/GitHub-fiscal-data-ocr-engine-24292e?style=for-the-badge&logo=github&logoColor=white" alt="GitHub" /></a>
-  <a href="https://srsatriano.github.io/portfolio-matheus-satriano/"><img src="https://img.shields.io/badge/Portfólio-web-0891b2?style=for-the-badge" alt="Portfólio" /></a>
-</p>
+Extrai, valida e categoriza dados de notas fiscais brasileiras: o **XML da NF-e/NFC-e**, o **DANFE em PDF**, a **nota de serviço em texto** e **fotos de cupom** (com OCR opcional). Processa uma pasta inteira e gera uma planilha com o total gasto por categoria.
 
-<p>
-  <img src="https://img.shields.io/badge/versão-1.0.0-0ea5e9?style=flat-square" alt="versão" />
-  <img src="https://img.shields.io/badge/Tier-1-8b5cf6?style=flat-square" alt="tier" />
-  <img src="https://img.shields.io/badge/demo-pronto-22c55e?style=flat-square" alt="demo" />
-  <img src="https://img.shields.io/badge/licença-MIT-22c55e?style=flat-square" alt="licença" />
-  <img src="https://img.shields.io/badge/idioma-pt--BR-blue?style=flat-square" alt="idioma" />
-  <img src="https://img.shields.io/badge/CI-GitHub_Actions-8b5cf6?style=flat-square" alt="ci" />
-</p>
+## O que ele faz
 
-<p><strong>Extração estruturada de NF-e/NFS-e com validação e categorização para o Brasil.</strong></p>
+- **XML da NF-e 4.00:** lê chave, número, série, data, emitente, destinatário, itens (NCM, CFOP, quantidade, valores) e totais (produtos, nota, ICMS, IPI, PIS, COFINS).
+- **Validação de verdade:** confere o dígito verificador de CNPJ, CPF e da chave de acesso. Também confere se a soma dos itens bate com o total. Tudo que não confere aparece como alerta.
+- **PDF, texto e imagem:** acha a chave (mesmo com espaços), CNPJs, data e valores rotulados. O CNPJ que o OCR leu errado é descartado pelo DV, em vez de virar dado errado.
+- **Categoria da despesa:** pelo NCM (combustível, informática, material de escritório, saúde, alimentação…), pelo CFOP de serviço e por palavras-chave. A nota fica com a categoria que concentra mais valor.
+- **Lote:** processa uma pasta, gera CSV (separador `;`, pronto para Excel) e mostra o resumo por categoria. Um arquivo ruim não derruba o lote.
 
-<p>
-  Autor: <a href="https://github.com/SrSatriano">@SrSatriano</a> ·
-  Release <strong>1.0.0</strong> (2026-03-26)
-</p>
-
-</div>
-
----
-
-## Índice
-
-1. [Visão geral](#visão-geral)
-2. [Problema e solução](#problema-e-solução)
-3. [Para quem é](#para-quem-é)
-4. [Casos de uso](#casos-de-uso)
-5. [Funcionalidades](#funcionalidades)
-6. [Stack tecnológica](#stack-tecnológica)
-7. [Arquitetura](#arquitetura)
-8. [Estrutura do repositório](#estrutura-do-repositório)
-9. [Pré-requisitos](#pré-requisitos)
-10. [Instalação e execução](#instalação-e-execução)
-11. [Configuração](#configuração)
-12. [Testes](#testes)
-13. [Performance](#performance)
-14. [Deploy e operação](#deploy-e-operação)
-15. [Limitações conhecidas](#limitações-conhecidas)
-16. [Roadmap](#roadmap)
-17. [Documentação complementar](#documentação-complementar)
-18. [Segurança e licença](#segurança-e-licença)
-
----
-
-## Visão geral
-
-Este repositório faz parte do **portfólio de engenharia** mantido por [@SrSatriano](https://github.com/SrSatriano). A versão **1.0.0** entrega implementação do núcleo do produto, testes automatizados, pipeline de integração contínua e documentação operacional em **português brasileiro**.
-
-O objetivo é permitir que você clone, execute e evolua o projeto com clareza — do desenvolvimento local ao deploy em produção.
-
-## Problema e solução
-
-| | |
-|---|---|
-| **Problema** | Digitar notas manualmente gera erros e atraso no fechamento contábil. |
-| **Solução** | Upload de PDF/imagem, parsing de CNPJ e valores, categorização por regras. |
-
-## Para quem é
-
-Contadores, BPOs financeiros e ERPs brasileiros.
-
-## Casos de uso
-
-- Fechamento mensal de despesas
-- Validação de CNPJ em lote
-
-## Funcionalidades
-
-- [x] Pipeline OCR multi-engine
-- [x] Validação de CNPJ e totais
-- [x] Categorização por regras (combustível, software, etc.)
-- [x] Export CSV e webhook
-- [x] Testes pytest
-
-## Stack tecnológica
-
-| Camada | Tecnologias |
-|--------|-------------|
-| **Principal** | Python, FastAPI, EasyOCR, regras fiscais |
-
-## Arquitetura
-
-```mermaid
-flowchart LR
-  UP[Upload NF] --> OCR[OCR / parsing]
-  OCR --> VAL[Validação CNPJ]
-  VAL --> CAT[Categorização fiscal]
-  CAT --> ERP[Export CSV / webhook]
-```
-
-Detalhamento de componentes, fluxos de dados e decisões de design: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
-
-## Estrutura do repositório
-
-| Caminho | Descrição |
-|---------|-----------|
-| `src/extraction/` | Pipeline de extração |
-| `src/categorization/` | Regras fiscais |
-| `samples/` | Notas de exemplo |
-
-## Pré-requisitos
-
-Python 3.11+.
-
-## Instalação e execução
+## Uso
 
 ```bash
-git clone https://github.com/SrSatriano/fiscal-data-ocr-engine.git
-cd fiscal-data-ocr-engine
+pip install -e .            # + ".[ocr]" para fotos (precisa do Tesseract com o idioma por)
+fiscalocr extract examples/
+fiscalocr extract ~/notas --csv despesas.csv
+fiscalocr extract nota.xml --json
+fiscalocr serve             # API em http://127.0.0.1:8090/docs
 ```
 
-```bash
-pip install -r requirements.txt
-uvicorn src.api.main:app --reload
+```
+nfe_exemplo.xml                2026-11-10 11222333000181    R$ 7.299,00  informatica
+nfse_exemplo.txt               2026-11-05 11222333000181    R$ 2.450,00  servicos_ti  ⚠ 1 CNPJ(s) com dígito verificador inválido ignorado(s) — possível erro de OCR
+{"documentos": 2, "com_alerta": 1, "total": 9749.0, "por_categoria": {"informatica": 7299.0, "servicos_ti": 2450.0}}
 ```
 
-## Configuração
-
-| Variável | Descrição | Exemplo |
-|----------|-----------|--------|
-| `OCR_LANG` | Idioma EasyOCR | `pt` |
-
-> **Importante:** nunca faça commit de arquivos `.env` com segredos reais. Use `.env.example` como referência.
+API: `POST /extract` com o arquivo (multipart). A resposta é um JSON com documento, itens, totais, categoria, alertas e confiança.
 
 ## Testes
 
-Execute a suíte de testes antes de abrir pull requests:
+São 11 testes:
+- validadores de CNPJ, CPF e chave;
+- XML completo e com inconsistências;
+- recusa de XML com entidades;
+- texto com ruído de OCR;
+- chave do DANFE com espaços;
+- PDF gerado no próprio teste;
+- categorias, lote, CSV, CLI e API.
 
-```bash
-pytest tests/ -q
-```
+O CI roda em Linux e Windows.
 
-A pipeline [`.github/workflows/ci.yml`](.github/workflows/ci.yml) repete build e testes em cada push para `main`.
+## Limitações
 
-## Performance
+- NFS-e não tem layout nacional único (cada prefeitura tem o seu); por isso a nota de serviço é lida pela rota de texto.
+- O OCR de foto depende da qualidade da imagem. A validação por DV evita dado errado, mas não recupera dígito ilegível.
 
-| PDF nativo | Acurácia de campos |
-|------------|--------------------|
-| | ~98% |
+## Autor
 
-Metodologia, hardware de referência e flags de compilação: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
-
-## Deploy e operação
-
-| Guia | Conteúdo |
-|------|----------|
-| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Homologação, produção e rollback |
-| [docs/OPERATIONS.md](docs/OPERATIONS.md) | Monitoramento, alertas e incidentes |
-
-## Limitações conhecidas
-
-- NF-e XML nativo é mais preciso que OCR em scan
-
-## Roadmap
-
-- Parser XML NF-e
-- LLM fallback opcional
-
-## Documentação complementar
-
-| Documento | Descrição |
-|-----------|-----------|
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Arquitetura e decisões técnicas |
-| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Deploy passo a passo |
-| [docs/OPERATIONS.md](docs/OPERATIONS.md) | Runbook operacional |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Como contribuir |
-| [CHANGELOG.md](CHANGELOG.md) | Histórico de versões |
-| [SECURITY.md](SECURITY.md) | Política de segurança |
-| [AUTHORS.md](AUTHORS.md) | Créditos |
-
-## Segurança e licença
-
-- Dependências revisadas na release **1.0.0**
-- Vulnerabilidades: siga [SECURITY.md](SECURITY.md)
-- Licença: [MIT](LICENSE) © SrSatriano 2026
-
----
-
-<p align="center">
-  <a href="https://srsatriano.github.io/portfolio-matheus-satriano/">Portfólio completo</a> ·
-  <a href="https://github.com/SrSatriano">@SrSatriano</a> ·
-  <a href="https://github.com/SrSatriano/fiscal-data-ocr-engine">Este repositório</a>
-</p>
+Matheus Rodrigues Satriano — [github.com/SrSatriano](https://github.com/SrSatriano)

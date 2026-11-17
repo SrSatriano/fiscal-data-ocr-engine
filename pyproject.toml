@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fiscal-data-ocr-engine"
+version = "1.1.0"
+description = "Extração e validação de dados de notas fiscais brasileiras (XML da NF-e, DANFE em PDF, texto e OCR)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Matheus Rodrigues Satriano" }]
+dependencies = ["pydantic>=2.5", "pypdf>=4.0", "fastapi>=0.110", "uvicorn>=0.27", "python-multipart>=0.0.9"]
+
+[project.optional-dependencies]
+ocr = ["pytesseract>=0.3.10", "pillow>=10.0"]
+dev = ["pytest>=8.0", "httpx>=0.26", "ruff>=0.5", "reportlab>=4.0"]
+
+[project.scripts]
+fiscalocr = "fiscalocr.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+ignore = ["B008"]

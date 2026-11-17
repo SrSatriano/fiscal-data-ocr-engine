@@ -1,0 +1,7 @@
+NOTA FISCAL DE SERVIÇO ELETRÔNICA
+Prestador CNPJ: 11.222.333/0001-81
+Tomador CNPJ: 11.222.333/0001-82
+Emissão: 05/11/2026
+Descrição: Licença de software SaaS - hospedagem cloud
+Valor do ICMS: R$ 0,00
+VALOR TOTAL DA NOTA: R$ 2.450,00

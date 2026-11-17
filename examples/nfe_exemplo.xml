@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00"><NFe><infNFe Id="NFe35261111222333000181550010000012341123456780" versao="4.00">
+<ide><mod>55</mod><serie>1</serie><nNF>1234</nNF><dhEmi>2026-11-10T10:30:00-03:00</dhEmi></ide>
+<emit><CNPJ>11222333000181</CNPJ><xNome>Fornecedor Exemplo LTDA</xNome></emit>
+<dest><CNPJ>44555666000181</CNPJ><xNome>Cliente SA</xNome></dest>
+<det nItem="1"><prod><cProd>1</cProd><xProd>Notebook 14 polegadas</xProd><NCM>84713012</NCM>
+        <CFOP>5102</CFOP><qCom>2</qCom><vUnCom>3500.0</vUnCom><vProd>7000.00</vProd></prod></det><det nItem="2"><prod><cProd>2</cProd><xProd>Papel A4 500 folhas</xProd><NCM>48025610</NCM>
+        <CFOP>5102</CFOP><qCom>10</qCom><vUnCom>29.9</vUnCom><vProd>299.00</vProd></prod></det>
+<total><ICMSTot><vProd>7299.00</vProd><vICMS>36.00</vICMS><vIPI>0.00</vIPI><vNF>7299.00</vNF></ICMSTot></total>
+</infNFe></NFe></nfeProc>
